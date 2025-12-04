@@ -1,5 +1,6 @@
 // Import Express.js
 import express from 'express'
+import 'dotenv/config'
 
 // Create an Express app
 const app = express()
@@ -9,7 +10,10 @@ app.use(express.json())
 
 // Set port and verify_token
 const port = process.env.PORT || 3000
-const verifyToken = process.env.VERIFY_TOKEN
+const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN
+const apiToken = process.env.API_TOKEN
+const bussinessPhone = process.env.BUSINESS_PHONE
+const apiVersion = process.env.API_VERSION
 
 // Route for GET requests
 app.get('/', (req, res) => {
