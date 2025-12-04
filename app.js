@@ -12,7 +12,7 @@ app.use(express.json())
 const port = process.env.PORT || 3000
 const verifyToken = process.env.WEBHOOK_VERIFY_TOKEN // Token de verificación
 const apiToken = process.env.API_TOKEN // Token de acceso de WhatsApp
-const apiVersion = process.env.API_VERSION || 'v19.0' // Versión de la API (por defecto 'v19.0')
+const apiVersion = process.env.API_VERSION || 'v22.0' // Versión de la API (por defecto 'v19.0')
 
 // Ruta para GET (verificación del webhook)
 app.get('/', (req, res) => {
