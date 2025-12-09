@@ -1,6 +1,13 @@
 import whatsappService from './whatsappServices.js'
+import Welcome from '../sections/welcome/welcome.js'
+import WelcomeMenu from '../sections/menus/welcome/index.js'
+import HandleOptions from '../sections/menus/welcome/handleOptions.js'
 
 class MessageHandler {
+  constructor() {
+    this.informationPerson = {}
+  }
+
   async handleIncomingMessage(message, senderInfo) {
     if (message?.type === 'text') {
       // Verifica que el mensaje sea de tipo texto
@@ -8,8 +15,8 @@ class MessageHandler {
 
       // Si es un saludo (hola), responde con un mensaje de bienvenida
       if (this.isGreeting(incomingMessage)) {
-        await this.sendWelcomeMessage(message.from, message.id, senderInfo)
-        await this.sendWelcomeMenu(message.from) // Envia el menú de opciones al usuario
+        await Welcome.sendWelcomeMessage(message.from, message.id, senderInfo)
+        await WelcomeMenu.sendWelcomeMenu(message.from) // Envia el menú de opciones al usuario
       } else if (incomingMessage.match(/\bmedia\b/)) {
         await this.sendMedia(message.from)
       } else {
@@ -20,7 +27,7 @@ class MessageHandler {
       await whatsappService.markAsRead(message.id) // Marca el mensaje como leído
     } else if (message.type === 'interactive') {
       const option = message.interactive.button_reply.id.toLowerCase().trim()
-      await this.handleMenuOption(message.from, option, message.id)
+      await HandleOptions.handleMenuOption(message.from, option, message.id)
       await whatsappService.markAsRead(message.id) // Marca el mensaje como leído
     }
   }
@@ -41,48 +48,6 @@ class MessageHandler {
       'oli'
     ]
     return greetings.includes(message)
-  }
-
-  getSenderName(senderInfo) {
-    return senderInfo.profile?.name || senderInfo.wa_id
-  }
-
-  async sendWelcomeMessage(to, messageId, senderInfo) {
-    const name = this.getSenderName(senderInfo)
-    const welcomeMessage = `¡Hola ${
-      name.split(' ')[0]
-    }!, Bienvenido a IFE Colombia, un instituto de educación comprometido con tu formación. Aquí podrás encontrar información sobre todos nuestros cursos, programas académicos, procesos de matrícula, y mucho más. Si tienes alguna pregunta o necesitas orientación sobre nuestros servicios, ¡estoy aquí para ayudarte! ¿En qué puedo asistirte hoy?`
-
-    await whatsappService.sendMessage(to, welcomeMessage, messageId)
-  }
-
-  async sendWelcomeMenu(to) {
-    const menuMessage = `Elige una opción`
-    const buttons = [
-      {
-        type: 'reply',
-        reply: {
-          id: 'option_1',
-          title: 'Información General'
-        }
-      },
-      {
-        type: 'reply',
-        reply: {
-          id: 'option_2',
-          title: 'Matricula'
-        }
-      },
-      {
-        type: 'reply',
-        reply: {
-          id: 'option_3',
-          title: 'Programas'
-        }
-      }
-    ]
-
-    await whatsappService.sendInteractiveButton(to, menuMessage, buttons)
   }
 
   async optionInformationGeneral(to) {
@@ -132,23 +97,6 @@ class MessageHandler {
     await whatsappService.sendMediaMessage(to, type, mediaUrl, caption)
   }
 
-  async handleMenuOption(to, option, messageId) {
-    let response
-    switch (option) {
-      case 'option_1':
-        await this.optionInformationGeneral(to)
-        break
-      case 'option_2':
-        await this.optionRegistration(to, messageId)
-        break
-      case 'option_3':
-        await this.optionProgramsImage(to, messageId)
-        break
-      default:
-        await 'no soportado'
-    }
-  }
-
   async sendMedia(to) {
     const mediaUrl =
       'https://drive.google.com/uc?export=download&id=1_E6U_kTp_OqJrBZKBniS4P1Gx2kKGJH7'
@@ -164,6 +112,31 @@ class MessageHandler {
     // const type = 'document'
     await whatsappService.sendMediaMessage(to, type, mediaUrl, caption)
   }
+
+  // async handleInformationPerson(to, message) {
+  //   const state = this.informationPerson[to]
+  //   let response
+  //   switch (state.step) {
+  //     case 'name':
+  //       state.name = message
+  //       state.step = 'email'
+  //       response = `¿Cuál es tu correo electrónico?`
+  //       break
+
+  //     case 'email':
+  //       state.email = message
+  //       state.step = 'phone'
+  //       response = `¿Cuál es tu número de teléfono?`
+  //       break
+
+  //     case 'phone':
+  //       state.phone = message
+  //       response = `¡Gracias por tu información! Te enviaremos un mensaje con tus credenciales de acceso a IFE`
+
+  //     default:
+  //       response = `No se ha podido encontrar información sobre el usuario ${to}`
+  //   }
+  // }
 }
 
 export default new MessageHandler()
