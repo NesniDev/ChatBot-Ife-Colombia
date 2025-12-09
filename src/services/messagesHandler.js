@@ -2,6 +2,7 @@ import whatsappService from './whatsappServices.js'
 import Welcome from '../sections/welcome/welcome.js'
 import WelcomeMenu from '../sections/menus/welcome/index.js'
 import HandleOptions from '../sections/menus/welcome/handleOptions.js'
+import ImagesInfo from '../sections/images/index.js'
 
 class MessageHandler {
   constructor() {
@@ -18,7 +19,7 @@ class MessageHandler {
         await Welcome.sendWelcomeMessage(message.from, message.id, senderInfo)
         await WelcomeMenu.sendWelcomeMenu(message.from) // Envia el menú de opciones al usuario
       } else if (incomingMessage.match(/\bmedia\b/)) {
-        await this.sendMedia(message.from)
+        await ImagesInfo.sendMedia(message.from)
       } else {
         // Si no es un saludo, simplemente repite el mensaje
         const response = `Echo: ${message.text.body}`
@@ -30,6 +31,7 @@ class MessageHandler {
       await HandleOptions.handleMenuOption(message.from, option, message.id)
       await whatsappService.markAsRead(message.id) // Marca el mensaje como leído
     }
+    await whatsappService.sendInteractiveButton(to, menuMessage, buttons)
   }
 
   isGreeting(message) {
@@ -48,22 +50,6 @@ class MessageHandler {
       'oli'
     ]
     return greetings.includes(message)
-  }
-
-  async sendMedia(to) {
-    const mediaUrl =
-      'https://drive.google.com/uc?export=download&id=1_E6U_kTp_OqJrBZKBniS4P1Gx2kKGJH7'
-    const caption = '¡Unéte a nuestros cursos de programas académicos!'
-    const type = 'audio'
-
-    // const mediaUrl = 'https://s3.amazonaws.com/gndx.dev/medpet-video.mp4';
-    // const caption = '¡Esto es una video!';
-    // const type = 'video';
-
-    // const mediaUrl = 'https://s3.amazonaws.com/gndx.dev/medpet-file.pdf'
-    // const caption = '¡Esto es un PDF!'
-    // const type = 'document'
-    await whatsappService.sendMediaMessage(to, type, mediaUrl, caption)
   }
 
   // async handleInformationPerson(to, message) {
