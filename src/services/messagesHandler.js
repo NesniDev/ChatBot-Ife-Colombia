@@ -10,6 +10,8 @@ class MessageHandler {
       if (this.isGreeting(incomingMessage)) {
         await this.sendWelcomeMessage(message.from, message.id, senderInfo)
         await this.sendWelcomeMenu(message.from) // Envia el menú de opciones al usuario
+      } else if (incomingMessage.match(/\bmedia\b/)) {
+        await this.sendMedia(message.from)
       } else {
         // Si no es un saludo, simplemente repite el mensaje
         const response = `Echo: ${message.text.body}`
@@ -18,7 +20,7 @@ class MessageHandler {
       await whatsappService.markAsRead(message.id) // Marca el mensaje como leído
     } else if (message.type === 'interactive') {
       const option = message.interactive.button_reply.id.toLowerCase().trim()
-      await this.handleMenuOption(message.from, option)
+      await this.handleMenuOption(message.from, option, message.id)
       await whatsappService.markAsRead(message.id) // Marca el mensaje como leído
     }
   }
@@ -35,7 +37,8 @@ class MessageHandler {
       'buenas noches',
       'buen día',
       'holi',
-      'ola'
+      'ola',
+      'oli'
     ]
     return greetings.includes(message)
   }
@@ -111,25 +114,55 @@ class MessageHandler {
     await whatsappService.sendInteractiveButton(to, messageInfo, buttons)
   }
 
-  async handleMenuOption(to, option) {
+  async optionRegistration(to, messageId) {
+    const messageResponse = `Para iniciar clases en el mes de Febrero del año 2026 contamos con los siguientes horarios de estudio:
+      * Jornada Presencial de Lunes, Martes, Miércoles y Jueves de 8:30 a.m. a 11:00 a.m. (inicio de clases 16 de Febrero de 2026)
+      * Jornada Presencial los Sábados de 8:00 a.m. a 3:30 p.m. (inicio de clases 14 de Febrero de 2026)
+      * Jornada Virtual con Apoyo de Plataforma Tecnológica y Tutorías Online, acompañamiento personalizado con clases remotas por google meet los días viernes de 2:30 a 4:00 p.m., las clases se graban para cualquier inquietud (inicio de clases 20 de Febrero de 2026)`
+
+    await whatsappService.sendMessage(to, messageResponse, messageId)
+  }
+
+  async optionProgramsImage(to, messageId) {
+    const mediaUrl =
+      'https://drive.google.com/uc?export=download&id=1emZCKF0xOhWH7B40cxvYKsn0-SFWGUf0'
+    const caption = '¡Unéte a nuestros cursos de programas académicos!'
+    const type = 'image'
+
+    await whatsappService.sendMediaMessage(to, type, mediaUrl, caption)
+  }
+
+  async handleMenuOption(to, option, messageId) {
     let response
     switch (option) {
       case 'option_1':
         await this.optionInformationGeneral(to)
         break
       case 'option_2':
-        await ''
+        await this.optionRegistration(to, messageId)
         break
       case 'option_3':
-        await ''
+        await this.optionProgramsImage(to, messageId)
         break
       default:
-        await whatsappService.sendMessage(
-          message.from,
-          'Opción no soportada',
-          message.id
-        )
+        await 'no soportado'
     }
+  }
+
+  async sendMedia(to) {
+    const mediaUrl =
+      'https://drive.google.com/uc?export=download&id=1_E6U_kTp_OqJrBZKBniS4P1Gx2kKGJH7'
+    const caption = '¡Unéte a nuestros cursos de programas académicos!'
+    const type = 'audio'
+
+    // const mediaUrl = 'https://s3.amazonaws.com/gndx.dev/medpet-video.mp4';
+    // const caption = '¡Esto es una video!';
+    // const type = 'video';
+
+    // const mediaUrl = 'https://s3.amazonaws.com/gndx.dev/medpet-file.pdf'
+    // const caption = '¡Esto es un PDF!'
+    // const type = 'document'
+    await whatsappService.sendMediaMessage(to, type, mediaUrl, caption)
   }
 }
 

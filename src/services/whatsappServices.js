@@ -68,6 +68,55 @@ class WhatsAppService {
       console.error('Error marking message as read:', error)
     }
   }
+
+  async sendMediaMessage(to, type, mediaUrl, caption) {
+    try {
+      const mediaObject = {} // Crea un objeto para almacenar los datos del mensaje de medios
+      switch (type) {
+        case 'image':
+          mediaObject.image = {
+            link: mediaUrl,
+            caption: caption
+          }
+          break
+        case 'video':
+          mediaObject.video = {
+            link: mediaUrl,
+            caption: caption
+          }
+          break
+        case 'audio':
+          mediaObject.audio = {
+            link: mediaUrl
+          }
+          break
+        case 'document':
+          mediaObject.document = {
+            link: mediaUrl,
+            caption: caption,
+            filename: 'document.pdf'
+          }
+          break
+        default:
+          throw new Error('Tipo de medio no soportado')
+      }
+      await axios({
+        method: 'POST',
+        url: `https://graph.facebook.com/${config.API_VERSION}/${config.BUSINESS_PHONE}/messages`,
+        headers: {
+          Authorization: `Bearer ${config.API_TOKEN}`
+        },
+        data: {
+          messaging_product: 'whatsapp',
+          to,
+          type: type,
+          ...mediaObject
+        }
+      })
+    } catch (error) {
+      console.error('Error sending media message:', error)
+    }
+  }
 }
 
 export default new WhatsAppService()
