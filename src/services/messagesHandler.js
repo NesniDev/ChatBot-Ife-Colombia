@@ -3,6 +3,7 @@ import Welcome from '../sections/welcome/welcome.js'
 import WelcomeMenu from '../sections/menus/welcome/index.js'
 import HandleOptions from '../sections/menus/welcome/handleOptions.js'
 import ImagesInfo from '../sections/images/index.js'
+import GetInfoPerson from '../sections/getInfoPerson/index.js'
 
 class MessageHandler {
   constructor() {
@@ -16,10 +17,17 @@ class MessageHandler {
 
       // Si es un saludo (hola), responde con un mensaje de bienvenida
       if (this.isGreeting(incomingMessage)) {
-        await Welcome.sendWelcomeMessage(message.from, message.id, senderInfo)
-        await WelcomeMenu.sendWelcomeMenu(message.from) // Envia el menú de opciones al usuario
+        await GetInfoPerson.sendInformationMessage(message.from, message.id)
+        // await WelcomeMenu.sendWelcomeMenu(message.from) // Envia el menú de opciones al usuario
       } else if (incomingMessage.match(/\bmedia\b/)) {
         await ImagesInfo.sendMedia(message.from)
+      } else if (GetInfoPerson.informationPerson[message.from]) {
+        await GetInfoPerson.handleInformationPerson(
+          message.from,
+          incomingMessage,
+          message.id,
+          senderInfo
+        )
       } else {
         // Si no es un saludo, simplemente repite el mensaje
         const response = `Echo: ${message.text.body}`
@@ -31,7 +39,7 @@ class MessageHandler {
       await HandleOptions.handleMenuOption(message.from, option, message.id)
       await whatsappService.markAsRead(message.id) // Marca el mensaje como leído
     }
-    await whatsappService.sendInteractiveButton(to, menuMessage, buttons)
+    // await whatsappService.sendInteractiveButton(to, menuMessage, buttons)
   }
 
   isGreeting(message) {
@@ -51,31 +59,6 @@ class MessageHandler {
     ]
     return greetings.includes(message)
   }
-
-  // async handleInformationPerson(to, message) {
-  //   const state = this.informationPerson[to]
-  //   let response
-  //   switch (state.step) {
-  //     case 'name':
-  //       state.name = message
-  //       state.step = 'email'
-  //       response = `¿Cuál es tu correo electrónico?`
-  //       break
-
-  //     case 'email':
-  //       state.email = message
-  //       state.step = 'phone'
-  //       response = `¿Cuál es tu número de teléfono?`
-  //       break
-
-  //     case 'phone':
-  //       state.phone = message
-  //       response = `¡Gracias por tu información! Te enviaremos un mensaje con tus credenciales de acceso a IFE`
-
-  //     default:
-  //       response = `No se ha podido encontrar información sobre el usuario ${to}`
-  //   }
-  // }
 }
 
 export default new MessageHandler()
